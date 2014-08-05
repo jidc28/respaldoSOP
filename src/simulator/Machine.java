@@ -117,7 +117,7 @@ public class Machine {
                 PageBlockInfo block = _buddySystem.assignMemory(proc.memNeeded(), proc.pid());
                 proc.setPageBlock(block);
                 _ready.add(proc);
-                _buddySystem.printMemoryStatus();
+                //_buddySystem.printMemoryStatus();
             }
 
         } finally {
@@ -133,7 +133,6 @@ public class Machine {
         while (it.hasNext()) {
             Process proc = it.next();
             int timeLeft = proc.timeLeft();
-            System.out.println("\n\tTime left: \n" + timeLeft);
             int arrivalTime = proc.arrivalTime();
             
             List<AccessTuple> access = proc.pageAccess();
@@ -144,6 +143,8 @@ public class Machine {
                 int time = tuple.time;
                 int page = tuple.page;
 
+                System.out.println("\t\t" + (arrivalTime + time));
+                System.out.println("\t\t" + (_timer));
                 if ((arrivalTime + time) != _timer) {
                     access.add(tuple);
                     break;

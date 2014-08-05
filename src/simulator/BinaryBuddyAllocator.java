@@ -102,9 +102,9 @@ public class BinaryBuddyAllocator {
     }
 
     public void pageAccess(int vPage) {
-        System.out.println("Buddy> Init page access: " + _vMem[vPage]);
+        System.out.println("\n\tBuddy> Init page access: " + _vMem[vPage]);
         if (_vMem[vPage] == -1) {
-            System.out.println("Buddy> dentro del if");
+            System.out.println("\tBuddy> dentro del if VPAGE: " + vPage + "\n");
             _pageFault++;
             assignPhysicalPage(vPage);
         }
