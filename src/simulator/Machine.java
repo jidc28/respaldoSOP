@@ -101,7 +101,7 @@ public class Machine {
     }
 
 
-    public void newProcesses() throws InterruptedException {
+    public void newProcesses() {
         System.out.println("CPU> Start " + _timer);
         if (_newCount == 0) {
             return;
@@ -127,43 +127,48 @@ public class Machine {
     }
 
     public void manageReady() {
-        int size = _ready.size();
-        Iterator<Process> it = _ready.iterator();
+        lock.lock();
+        try {
+            int size = _ready.size();
+            Iterator<Process> it = _ready.iterator();
 
-        while (it.hasNext()) {
-            Process proc = it.next();
-            int timeLeft = proc.timeLeft();
-            int arrivalTime = proc.arrivalTime();
-            
-            List<AccessTuple> access = proc.pageAccess();
-            int accessSize  = access.size();           
+            while (it.hasNext()) {
+                Process proc = it.next();
+                int timeLeft = proc.timeLeft();
+                int arrivalTime = proc.arrivalTime();
 
-            for (int i = 0; i < size; i++) {
-                AccessTuple tuple = access.remove(0);
-                int time = tuple.time;
-                int page = tuple.page;
+                List<AccessTuple> access = proc.pageAccess();
+                int accessSize = access.size();
 
-                System.out.println("\t\t" + (arrivalTime + time));
-                System.out.println("\t\t" + (_timer));
-                if ((arrivalTime + time) != _timer) {
-                    access.add(tuple);
-                    break;
+                for (int i = 0; i < size; i++) {
+                    AccessTuple tuple = access.remove(0);
+                    int time = tuple.time;
+                    int page = tuple.page;
+
+                    System.out.println("\t\t" + (arrivalTime + time));
+                    System.out.println("\t\t" + (_timer));
+                    if ((arrivalTime + time) != _timer) {
+                        access.add(tuple);
+                        break;
+                    }
+                    System.out.println("CPU> Page access init");
+                    int offset = proc.pageBlock().getPageNo();
+                    _buddySystem.pageAccess(page + offset);
+                    System.out.println("CPU> Page access end");
+
                 }
-                System.out.println("CPU> Page access init");
-                int offset = proc.pageBlock().getPageNo();
-                _buddySystem.pageAccess(page + offset);
-                System.out.println("CPU> Page access end");
-
+                if ((timeLeft - 1) < 0) {
+                    System.out.println("Removing");
+                    int index = proc.pageBlock().getPageNo();
+                    int order = proc.pageBlock().getOrder();
+                    _buddySystem.freeMemory(index, order);
+                    it.remove();
+                } else {
+                    proc.setTimeLeft(timeLeft - 1);
+                }
             }
-            if ((timeLeft - 1) < 0) {
-                System.out.println("Removing");
-                int index = proc.pageBlock().getPageNo();
-                int order = proc.pageBlock().getOrder();
-                _buddySystem.freeMemory(index, order);
-                it.remove();
-            } else {
-                proc.setTimeLeft(timeLeft - 1);
-            }
+        } finally {
+            lock.unlock();
         }
         //System.out.println("\nReady finish> \n" + _ready);
     }

@@ -17,12 +17,12 @@ public class Cpu implements Runnable {
     }
 
     public void run() {
-        try{
+//        try{
             _m.manageReady();
-            _m.newProcesses();
+           // _m.newProcesses();
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 }

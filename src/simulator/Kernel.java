@@ -20,6 +20,7 @@ public class Kernel implements Runnable {
     public void run() {
         try {
         _m.manageNew();
+         _m.newProcesses();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
