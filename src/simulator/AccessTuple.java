@@ -18,6 +18,12 @@ public class AccessTuple {
         this.page = page; 
     } 
 
+    @Override
+    public AccessTuple clone() {
+        return (new AccessTuple(this.time, this.page));
+    }
+    
+    @Override
     public String toString() {
         return ("t:"+time+" - p:"+page);
     }

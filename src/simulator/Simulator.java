@@ -9,24 +9,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import static java.util.concurrent.TimeUnit.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
+import org.xml.sax.SAXException;
 /**
  *
  * @author Fabiola
@@ -34,14 +27,39 @@ import java.util.concurrent.ScheduledFuture;
 public class Simulator {
     private static final int DELAY = 1;
     private static final int PERIOD = 1;
-    private static PriorityQueue<Process> _processes;
+    public static final int MAXORDER = 11;
+    
     private static final int INIT_CAPACITY = 20;
     private static final ScheduledExecutorService scheduler = 
         Executors.newScheduledThreadPool(1);
-    private static Machine _m;
-    private static BinaryBuddyAllocator _buddy;
+    
     private static final MainFrame _frame = new MainFrame();
     
+    protected static PriorityQueue<Process> _processes;
+    protected static Ready _ready = new Ready();
+    protected static BinaryBuddyAllocator _buddySystem;
+    protected static Clock _timer = new Clock();
+    //protected static List<Process> _new = new ArrayList<Process>();
+    protected static New _new = new New();
+
+    public static void printQueues() {
+        _frame.setTimer(String.valueOf(_timer.time() - 1));
+        List<Process> newQueueList = _new.clone();
+        Process[] newQueue = newQueueList.toArray(new Process[0]);
+        System.out.println(newQueue);
+        _frame.setNewQueue(newQueue);
+        Process[] readyQueue = _ready.toArray();
+        _frame.setReadyQueue(readyQueue);
+    }
+    
+    public static void printStatistics() {
+        _buddySystem.updateStatistics(_frame);
+    }
+    
+    public static void printMemory() {
+        _buddySystem.updateFrameParameters(_frame);
+    }
+
     public static void startFrame() {
         try {
 
@@ -74,6 +92,7 @@ public class Simulator {
         //</editor-fold>    
     }
 
+    @SuppressWarnings("empty-statement")
     public static void main(String args[]) {
         try {
             startFrame();
@@ -84,16 +103,13 @@ public class Simulator {
             saxParser.parse(new File("/Users/Fabiola/Desktop/process.xml"),
                     handler);
 
-            _buddy = new BinaryBuddyAllocator(50, 11, _frame);
-            _m = new Machine(DELAY, PERIOD, handler.processes(), _buddy, _frame);
-
-            //   new Kernel(m);
-            //   new Cpu(m);
+            _processes = handler.processes();
+            _buddySystem = new BinaryBuddyAllocator(50, 11, _frame);
 
             ScheduledFuture<?> kernelHandle =
-                    scheduler.scheduleAtFixedRate(new Kernel(_m), DELAY, PERIOD, SECONDS);
+                    scheduler.scheduleAtFixedRate(new Kernel(), DELAY, PERIOD, SECONDS);
             ScheduledFuture<?> cpuHandler =
-                    scheduler.scheduleAtFixedRate(new Cpu(_m), DELAY, PERIOD, SECONDS);
+                    scheduler.scheduleAtFixedRate(new Cpu(), DELAY, PERIOD, SECONDS);
             
             while (true);
         } catch (ParserConfigurationException | SAXException | IOException e) {

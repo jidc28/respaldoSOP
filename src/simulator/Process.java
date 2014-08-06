@@ -28,6 +28,15 @@ public class Process {
         Process () {}
 
         Process (int pid, int arrivalTime, int memNeeded, int timeLeft,
+                List<AccessTuple> pageAccess, PageBlockInfo block) {
+            _pid         = pid;
+            _arrivalTime = arrivalTime;
+            _timeLeft    = timeLeft;
+            _memNeeded   = memNeeded;
+            _pageAccess  = pageAccess;
+            _pageBlock   = block;
+        }
+        Process (int pid, int arrivalTime, int memNeeded, int timeLeft,
                 List<AccessTuple> pageAccess) {
             _pid         = pid;
             _arrivalTime = arrivalTime;
@@ -37,6 +46,11 @@ public class Process {
             _pageBlock       = new PageBlockInfo();
         }
 
+        @Override
+        public Process clone() {
+            return new Process(this.pid(), this.arrivalTime(), this.timeLeft(),
+                    this.memNeeded(), this.pageAccess(), this.pageBlock());
+        }
         public int pid(){
             return _pid;
         }
@@ -85,11 +99,17 @@ public class Process {
             return _pageBlock;
         }
 
-        public String toString() {
-            String result = "pid: " + _pid + "\n" +
-                      "Arrival time: " + _arrivalTime + "\n" +
+    public String toString() {
+        String result = _pageAccess.isEmpty() ? "pid: " + _pid + " | " + _timeLeft :
+        "" + _pageAccess.get(0).time +
+        " | " + _pageAccess.get(0).page;
+        
+        /*
+         String result = "pid: " + _pid + "\n" +
+         "Arrival time: " + _arrivalTime + "\n" +
                       "Total memory: " + _memNeeded + "\n" +
                       "Page access: " + _pageAccess;
+                      */
             return result;
         }
     }
